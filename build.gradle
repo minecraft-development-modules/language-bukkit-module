@@ -1,19 +1,43 @@
-plugins {
-    id 'java'
-}
+apply plugin: "java"
 
 group 'fr.neutronstars'
 version '1.0.0-SNAPSHOT'
 
-repositories {
-    mavenCentral()
+buildscript {
+    ext.bukkit_version = "1.8.8-R0.1-SNAPSHOT"
 }
 
+repositories {
+    mavenCentral()
+    maven {
+        url "https://hub.spigotmc.org/nexus/content/repositories/snapshots/"
+    }
+}
+
+sourceCompatibility = "1.8"
+targetCompatibility = "1.8"
+
+configurations {
+    shade
+    compile.extendsFrom shade
+}
+
+// Use the shade configuration to include the dependency's class files in your final JAR
+
 dependencies {
+    compile "org.bukkit:bukkit:$bukkit_version"
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.0'
 }
 
 test {
     useJUnitPlatform()
+}
+
+jar {
+    configurations.shade.each { dep ->
+        from(project.zipTree(dep)) {
+            exclude 'META-INF', 'META-INF/**'
+        }
+    }
 }
